@@ -3,7 +3,7 @@ import { type OperationId, operations } from "./generated/operations.ts";
 import { createResources } from "./generated/resources.ts";
 import type { RequestOptions } from "./types.ts";
 
-export const SDK_VERSION = "0.2.0";
+export const SDK_VERSION = "0.2.1";
 
 export interface LurkOptions {
   /** A project key (`lurk_sk_…`). Keep it on your server, never in an app or a browser. Defaults to the `LURK_KEY` environment variable. */

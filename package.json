@@ -1,6 +1,6 @@
 {
   "name": "@getlurk/sdk",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "The Lurk API for TypeScript",
   "license": "Apache-2.0",

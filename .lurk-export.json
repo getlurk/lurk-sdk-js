@@ -1,7 +1,7 @@
 {
   "sdk": "js",
-  "version": "0.2.0",
-  "commit": "53ff91322231c6cc8adebe9c0254a90fafc23905",
+  "version": "0.2.1",
+  "commit": "7123eed7548955503c2afe1e8ebd97b9da6fb263",
   "files": [
     {
       "path": ".github/CODEOWNERS",
@@ -16,16 +16,12 @@
       "sha256": "160b810645105cdbd99855206e070b34a4657b2bf60828a66fd1137a94e9f984"
     },
     {
-      "path": ".github/dependabot.yml",
-      "sha256": "a1f84ec125d7f16a78105ed43bf8e243e71240362315621b13abdf7212132411"
-    },
-    {
       "path": ".github/pull_request_template.md",
       "sha256": "17bb659bd19f944027823f9bd217704bbad32a54849d0e666662f77671e8d2b5"
     },
     {
       "path": ".github/workflows/publish.yml",
-      "sha256": "03cc67272f64030b34c6884de4790fa14f019a2351625bf39ed6175d824bc8f4"
+      "sha256": "203d1dd16418059c53c54476d40bbad30988462087f16fe33d7ea4035bb4ddae"
     },
     {
       "path": ".gitignore",
@@ -61,7 +57,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "3eac4331908bebfb4040f16b155a81a0f73da55d0511ff6f6241c2d3c4980ad7"
+      "sha256": "a1b0bd3a077781845208fdeacc2afd0e0f21866f1b7340b68d782a7ba3d90bc5"
     },
     {
       "path": "src/client.test.ts",
@@ -69,7 +65,7 @@
     },
     {
       "path": "src/client.ts",
-      "sha256": "f4fc2786e14982c7e92e4939ee3fbb824fbdcce2e9295fe5dd532a818811c2a8"
+      "sha256": "07ac9a5c6e159589c798dbd8618f9adf40fed8983e58a0cc485e609f52c09603"
     },
     {
       "path": "src/errors.ts",
