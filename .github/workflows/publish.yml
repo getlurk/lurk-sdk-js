@@ -1,0 +1,94 @@
+# Publishes this package to npm. Written into this repository by Lurk's release job; do not edit it here (the next release overwrites it).
+#
+# - It runs only on a version tag, and only the release job can create one (a tag ruleset). A person approves the `publish` environment.
+# - There is no npm token anywhere: npm trusted publishing (OpenID Connect) gives the publish step a credential that lives for this run and
+#   only for this workflow, and npm records where the package was built (provenance).
+# - The package is built and tested once, in a job with no way to publish; the `publish` job uploads exactly that tarball.
+name: Publish
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+permissions: {}
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24
+      - name: The tag is the package's version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "v${VERSION}" != "${GITHUB_REF_NAME}" ]; then
+            echo "The tag ${GITHUB_REF_NAME} is not the package version ${VERSION}." >&2
+            exit 1
+          fi
+      - name: The files are the ones the release job exported
+        run: |
+          node -e '
+            const { readFileSync, readdirSync } = require("node:fs");
+            const { createHash } = require("node:crypto");
+            const record = JSON.parse(readFileSync(".lurk-export.json", "utf8"));
+            const bad = record.files.filter((f) => createHash("sha256").update(readFileSync(f.path)).digest("hex") !== f.sha256);
+            const listed = new Set([...record.files.map((f) => f.path), ".lurk-export.json", "package-lock.json"]);
+            const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+              e.name === ".git" || e.name === "node_modules" ? [] : e.isDirectory() ? walk(`${d}/${e.name}`) : [`${d}/${e.name}`.slice(2)]);
+            const extra = walk(".").filter((p) => !listed.has(p));
+            if (bad.length || extra.length) {
+              console.error("Changed since the export:", bad.map((f) => f.path), "Not in the export:", extra);
+              process.exit(1);
+            }
+            if (record.version !== process.env.GITHUB_REF_NAME.slice(1)) { console.error("The export is for another version."); process.exit(1); }
+          '
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Pack what will be published
+        run: npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/pack"
+      # What a customer's tools will make of the package: every entry point exists, and the types resolve from ESM, CommonJS and bundlers.
+      - name: The package is shaped right
+        run: |
+          npx --yes publint@0.3.25 run --strict .
+          npx --yes @arethetypeswrong/cli@0.18.5 --pack . --profile node16
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package
+          path: ${{ runner.temp }}/pack/*.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: publish
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing and provenance
+    steps:
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: package
+          path: ${{ runner.temp }}/pack
+      # Trusted publishing needs npm 11.5.1 or later. Pinned, and bumped by a pull request.
+      - run: npm install --global npm@11.8.0
+      - name: Publish the tarball that was built and tested
+        run: npm publish "$RUNNER_TEMP"/pack/*.tgz --access public --provenance

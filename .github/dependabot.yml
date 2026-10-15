@@ -1,0 +1,7 @@
+# Keeps the pinned actions current: each update is a pull request that changes one commit SHA, which is what a person can review.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

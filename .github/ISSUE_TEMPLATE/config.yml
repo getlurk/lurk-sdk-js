@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem
+    url: https://github.com/security/advisories/new
+    about: Use private vulnerability reporting, or write to security@getlurk.com. Never a public issue.
+  - name: Documentation
+    url: https://docs.getlurk.com
+    about: How Lurk works, with examples.
